@@ -1,9 +1,9 @@
 const { Router } = require('express');
-const {userModel} = require('../db');
+const {userModel, purchaseModel, courseModel} = require('../db');
 const {z} = require('zod');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-require('dotenv').config();
+const { userMiddleware } = require('../Middlewares/user');
 const userRouter = Router();
 
 userRouter.post('/signup', async(req, res) => {
@@ -35,8 +35,6 @@ userRouter.post('/signup', async(req, res) => {
       message: "Internal server error"
     })
   }
-
-  
 });
 
 userRouter.post('/signin', async(req, res) => {
@@ -59,10 +57,25 @@ userRouter.post('/signin', async(req, res) => {
   }
 });
 
-userRouter.get('/courses', (req, res) => {  
-  res.send('Hello World!');
+userRouter.get('/purchases', userMiddleware, async(req, res) => {  
+  const userId = req.userId;
+  const purchases = await purchaseModel.find({
+    userId
+  })
+  const purchasedCourseIds = [];
+  for(let i=0; i<purchases.length; i++){
+    purchasedCourseIds.push(purchases[i].courseId)
+  }
+  const purchasedData = await courseModel.find({
+    _id: {$in : purchasedCourseIds}
+  })
+
+  res.json({
+    purchases,
+    purchasedData
+  })
 });
 
 module.exports = {
   userRouter: userRouter,
-};
+};  

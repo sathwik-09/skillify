@@ -1,22 +1,24 @@
 const express = require('express');
+const mongoose = require('mongoose');
+require('dotenv').config(); 
 const app = express();
+
+const {userRouter} = require('./Routes/user');
+const {courseRouter} = require('./Routes/course');
+const {adminRouter} = require('./Routes/admin')
 
 app.use(express.json());
 
-app.get('/login', (req, res) => {
-  res.send('Hello World!');
-});
 
-app.get('/register', (req, res) => {
-  res.send('Hello World!');
-});
 
-app.get('puchase', (req, res) => {
-  res.send('Hello World!');
-});
+app.use('/api/v1/user', userRouter);
+app.use("/api/v1/admin", adminRouter)
+app.use('/api/v1/course', courseRouter);
 
-app.get('mycourses', (req, res) => {  
-  res.send('Hello World!');
-});
+async function main(){
+  await mongoose.connect(process.env.MONGODB_URL)
+  app.listen(3000);
+  console.log("connected to mongo db")
+}
+main();
 
-app.listen(3000);

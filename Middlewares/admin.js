@@ -14,5 +14,5 @@ const adminMiddleware = (req,res,next)=>{
 }
 
 module.exports = {
-  userMiddleware: adminMiddleware
+  adminMiddleware: adminMiddleware
 }

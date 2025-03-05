@@ -3,6 +3,7 @@ const {adminModel, courseModel} = require('../db');
 const {z} = require('zod');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const {adminMiddleware} = require('../Middlewares/admin')
 
 const adminRouter = Router();
 
@@ -57,15 +58,14 @@ adminRouter.post("/signin", async (req, res) => {
   }
 });
 
-adminRouter.post("/course", async(req, res) => {
+adminRouter.post("/course", adminMiddleware, async(req, res) => {
   const adminId = req.userId;
-  const {title,description,price,imageURL,creatorid} = req.body;
+  const {title,description,price,imageURL} = req.body;
   const course = await courseModel.create({
     title: title,
     description: description,
     price: price,
     imageURL: imageURL,
-    creatorid: adminId
   })
   res.json({
     message: "course created successfully",
@@ -73,18 +73,34 @@ adminRouter.post("/course", async(req, res) => {
   })
 });
 
-adminRouter.put("/", (req, res) => {
+adminRouter.put("/course", adminMiddleware, async(req, res) => {
+  const adminId = req.userId;
+  const {title,description,price,imageURL,courseId} = req.body;
+  const course = await courseModel.updateOne({
+    _id: courseId,
+    creatorId: adminId
+  },{
+    title: title,
+    description: description,
+    price: price,
+    imageURL: imageURL,
+  })
   res.json({
-    message: "Hello from removecourse admin"
-  });
+    message: "course updated successfully",
+    courseId: course._id
+  })
 });
 
-adminRouter.get("/bulk", (req, res) => {
+adminRouter.get("/bulk",adminMiddleware, async(req, res) => {
+  const adminId = req.userId;
+  const courses = await courseModel.find({
+    creatorId: adminId
+  })
   res.json({
-    message: "Hello from singup admin"
-  });
+    message: "course fetched successfully",
+    courses
+  })
 });
-
 
 module.exports={
   adminRouter,
